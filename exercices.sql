@@ -505,8 +505,301 @@ SELECT
 FROM
     salaries;
 
-#How many employees start dates are in the database?
+#How many employee start dates are in the database?
 SELECT 
     COUNT(DISTINCT from_date)
 FROM
     salaries;
+
+#How many departments are there in the “employees” database?
+SELECT 
+    COUNT(DISTINCT dept_no)
+FROM
+    departments;
+
+#How much money are spent on the salaries?
+SELECT 
+    SUM(salary)
+FROM
+    salaries;
+    
+#What is the total amount of money spent on salaries for all contracts starting after the 1st of January 1997?
+SELECT 
+    SUM(salary)
+FROM
+    salaries
+WHERE
+    from_date > '1997-01-01';
+
+#Which is the highest salary?
+SELECT 
+    MAX(salary)
+FROM
+    salaries;
+    
+#which is the lowest salary?
+SELECT 
+    MIN(salary)
+FROM
+    salaries;
+    
+#Which is the lowest employee number in the database?
+SELECT 
+    MIN(emp_no)
+FROM
+	employees;
+    
+#Which is the average anual salary the company's employee received?
+SELECT 
+    ROUND(AVG(salary))
+FROM
+    salaries;
+    
+#What is the average annual salary paid to employees who started after the 1st of January 1997?
+SELECT 
+    AVG(salary)
+FROM
+    salaries
+WHERE
+    from_date > '1997-01-01';
+    
+#Round the average amount of money spent on salaries for all contracts that started after the 1st of January 1997 to a precision of cents.
+SELECT 
+    ROUND(AVG(salary), 2)
+FROM
+    salaries
+WHERE
+    from_date > '1997-01-01';
+    
+#Using IFNULL() and COALESCE();
+SELECT * FROM departments_dup;
+
+ALTER TABLE departments_dup
+CHANGE COLUMN dept_name dept_name VARCHAR(40) NULL;
+
+INSERT INTO departments_dup(dept_no) VALUES ('d011'), ('d012');
+
+SELECT 
+    *
+FROM
+    departments_dup
+ORDER BY dept_no ASC;
+
+ALTER TABLE employees.departments_dup
+ADD COLUMN dept_manager VARCHAR(255) NULL AFTER dept_name;
+
+SELECT 
+    *
+FROM
+    departments_dup
+ORDER BY dept_no ASC;
+
+COMMIT;
+
+SELECT 
+    dept_no,
+    IFNULL(dept_name,
+            'department name not provided') as dept_name
+FROM
+    departments_dup;
+    
+SELECT 
+    *
+FROM
+    departments_dup
+ORDER BY dept_no;
+
+SELECT 
+    dept_no,
+    dept_name,
+    COALESCE(dept_manager, dept_name, 'N/A') AS dept_manager
+FROM
+    departments_dup
+ORDER BY dept_no ASC;
+
+#Using coalaesc to visualize a prototype of the table's final version
+SELECT 
+    dept_no,
+    dept_name,
+    COALESCE('department_manager_name') AS fake_col
+FROM
+    departments_dup;
+    
+#Select the department number and name from the ‘departments_dup’ table and add a third column where you name the department number (‘dept_no’) as ‘dept_info’. If ‘dept_no’ does not have a value, use ‘dept_name’.
+SELECT 
+    dept_no,
+    dept_name,
+    COALESCE(dept_no, dept_name) AS dept_info
+FROM
+    departments_dup
+ORDER BY dept_no ASC;
+
+#Modify the code obtained from the previous exercise in the following way. Apply the IFNULL() function to the values from the first and second column, so that ‘N/A’ is displayed whenever a department number has no value, and ‘Department name not provided’ is shown if there is no value for ‘dept_name’.
+SELECT 
+    IFNULL(dept_no, 'N/A') AS dept_no,
+    IFNULL(dept_name,
+            'Department name not provided') AS dept_name,
+    COALESCE(dept_no, dept_name) AS dept_info
+FROM
+    departments_dup
+ORDER BY dept_no ASC;
+
+DROP TABLE IF EXISTS departments_dup;
+
+CREATE TABLE departments_dup (
+    dept_no CHAR(4) NULL,
+    dept_name VARCHAR(40) NULL
+);
+
+ 
+INSERT INTO departments_dup
+(
+    dept_no,
+    dept_name
+)SELECT
+                *
+FROM
+                departments;
+ 
+INSERT INTO departments_dup (dept_name)
+
+VALUES ('Public Relations');
+
+ 
+DELETE FROM departments_dup 
+WHERE
+    dept_no = 'd002'; 
+
+   
+INSERT INTO departments_dup(dept_no) VALUES ('d010'), ('d011');
+ 
+ DROP TABLE IF EXISTS dept_manager_dup;
+
+CREATE TABLE dept_manager_dup (
+    emp_no INT(11) NOT NULL,
+    dept_no CHAR(4) NULL,
+    from_date DATE NOT NULL,
+    to_date DATE NULL
+);
+INSERT INTO dept_manager_dup select * from dept_manager;
+
+INSERT INTO dept_manager_dup (emp_no, from_date)VALUES (999904, '2017-01-01'),
+	(999905, '2017-01-01'),
+	(999906, '2017-01-01'),
+	(999907, '2017-01-01');
+
+DELETE FROM dept_manager_dup 
+WHERE
+    dept_no = 'd001';
+
+INSERT INTO departments_dup (dept_name)
+VALUES  ('Public Relations');
+
+DELETE FROM departments_dup 
+WHERE
+    dept_no = 'd002'; 
+
+SELECT 
+    *
+FROM
+    dept_manager_dup
+ORDER BY dept_no;
+
+SELECT 
+    *
+FROM
+    departments_dup
+ORDER BY dept_no;
+
+#INNER JOIN
+SELECT 
+    m.dept_no, m.emp_no, d.dept_name
+FROM
+    dept_manager_dup m
+        INNER JOIN
+    departments_dup d ON m.dept_no = d.dept_no
+ORDER BY m.dept_no;
+
+#Extract a list containing information about all managers’ employee number, first and last name, department number, and hire date. 
+SELECT 
+    e.emp_no, e.first_name, e.last_name, dm.dept_no, e.hire_date
+FROM
+    employees e
+        JOIN
+    dept_manager dm ON e.emp_no = dm.emp_no;
+
+SELECT 
+    m.dept_no, m.emp_no, m.from_date, m.to_date, d.dept_name
+FROM
+    dept_manager_dup m
+        INNER JOIN
+    departments_dup d ON m.dept_no = d.dept_no
+ORDER BY m.dept_no;
+
+#duplicate records
+insert into dept_manager_dup 
+values ('110228', 'd003', '1992-03-21', '9999-01-01');
+
+insert into departments_dup
+values ('d009', 'Customer Service');
+
+#Check 'dept_manager_dup' and 'departments_dup'
+SELECT 
+    *
+FROM
+    dept_manager_dup
+ORDER BY dept_no ASC;
+
+SELECT 
+    *
+FROM
+    departments_dup
+ORDER BY dept_no ASC;
+
+#inner join 
+SELECT 
+    m.dept_no, m.emp_no, d.dept_name
+FROM
+    dept_manager_dup m
+        JOIN
+    departments_dup d ON m.dept_no = d.dept_no
+ORDER BY dept_no;
+#departments_ dup table contains 2 records for deparment 9, that's why every time dept 9 from the first table is matched with the dept 9 from the second table, two records are displayed
+
+#Handeling duplicates
+SELECT 
+    m.dept_no, m.emp_no, d.dept_name
+FROM
+    dept_manager_dup m
+        JOIN
+    departments_dup d ON m.dept_no = d.dept_no
+GROUP BY m.emp_no
+ORDER BY dept_no;
+
+#removing the duplicates from the two tables
+DELETE FROM dept_manager_dup 
+WHERE
+    emp_no = '110228';
+
+DELETE FROM departments_dup 
+WHERE
+    dept_no = 'd009';
+    
+#adding back the initial records
+insert into dept_manager_dup
+values ('110228', 'd003', '1992-03-21', '9999-01-01');
+
+insert into departments_dup
+values ('d009', 'Customer Service');
+
+SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
+
+#LEFT JOIN
+SELECT 
+    m.dept_no, m.emp_no, d.dept_name
+FROM
+    dept_manager_dup m
+        LEFT JOIN
+    departments_dup d ON m.dept_no = d.dept_no
+GROUP BY m.emp_no
+ORDER BY dept_no;
